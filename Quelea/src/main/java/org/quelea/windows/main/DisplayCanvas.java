@@ -22,8 +22,6 @@ import java.util.logging.Logger;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -34,7 +32,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-import org.quelea.data.displayable.Displayable;
 import org.quelea.services.notice.NoticeDrawer;
 import org.quelea.services.notice.NoticeOverlay;
 import org.quelea.services.utils.LoggerUtils;
@@ -60,10 +57,8 @@ public class DisplayCanvas extends StackPane {
     private final LogoImage logoImage;
     private final Rectangle black = new Rectangle();
     private final Node noticeOverlay;
-    private Displayable currentDisplayable;
     private final CanvasUpdater updater;
-    private Priority drawingPriority = Priority.LOW;
-    private final boolean playVideo;
+    private Priority drawingPriority;
 
     public enum Type {
 
@@ -79,7 +74,7 @@ public class DisplayCanvas extends StackPane {
         LOW(2);
         private final int priority;
 
-        private Priority(int priority) {
+        Priority(int priority) {
             this.priority = priority;
         }
 
@@ -92,37 +87,22 @@ public class DisplayCanvas extends StackPane {
      * Create a new canvas where the lyrics should be displayed.
      * <p/>
      *
-     * @param showBorder      true if the border should be shown around any text
-     *                        (only if the options say so) false otherwise.
      * @param stageView       true if this canvas is on a stage view, false if it's on
      *                        a main projection view.
-     * @param playVideo       true if this canvas should play video. (At present, only
-     *                        one canvas can do this due to VLC limitations.)
      * @param updater         the updater that will update this canvas.
      * @param drawingPriority the drawing priority of this canvas when it's
      *                        updating.
      */
-    public DisplayCanvas(boolean showBorder, boolean stageView, boolean playVideo, final CanvasUpdater updater, Priority drawingPriority) {
+    public DisplayCanvas(boolean stageView, final CanvasUpdater updater, Priority drawingPriority) {
         setStyle("-fx-background-color: rgba(0, 0, 0, 0);");
-        this.playVideo = playVideo;
         this.stageView = stageView;
         this.drawingPriority = drawingPriority;
         setMinHeight(0);
         setMinWidth(0);
         background = getNewImageView();
         this.updater = updater;
-        heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1) {
-                updateCanvas(updater);
-            }
-        });
-        widthProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1) {
-                updateCanvas(updater);
-            }
-        });
+        heightProperty().addListener((ov, t, t1) -> updateCanvas(updater));
+        widthProperty().addListener((ov, t, t1) -> updateCanvas(updater));
         getChildren().add(background);
 
         black.setFill(Color.BLACK);
@@ -149,48 +129,38 @@ public class DisplayCanvas extends StackPane {
         noticeDrawer = new NoticeDrawer(this);
         noticeOverlay = noticeDrawer.getOverlay();
         final Runnable[] r = new Runnable[1];
-        final ListChangeListener<Node> listener = new ListChangeListener<Node>() {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Node> change) {
-                while (change.next()) {
-                    if (!change.wasRemoved()) {
-                        try {
-                            /**
-                             * Platform.runLater() is necessary here to avoid
-                             * exceptions on some implementations, including
-                             * JFX8 at the time of writing. You can't modify a
-                             * list inside its listener, so the
-                             * Platform.runLater() delays it until after the
-                             * listener is complete (this is necessary even
-                             * though we're on the EDT.)
-                             * <p>
-                             * https://javafx-jira.kenai.com/browse/RT-35275
-                             */
-                            if (r[0] != null) {
-                                Platform.runLater(r[0]);
-                            }
-                        } catch (Exception ex) {
-                            LOGGER.log(Level.WARNING, "Can't move notice overlay to front", ex);
+        final ListChangeListener<Node> listener = change -> {
+            while (change.next()) {
+                if (!change.wasRemoved()) {
+                    try {
+                        /**
+                         * Platform.runLater() is necessary here to avoid
+                         * exceptions on some implementations, including
+                         * JFX8 at the time of writing. You can't modify a
+                         * list inside its listener, so the
+                         * Platform.runLater() delays it until after the
+                         * listener is complete (this is necessary even
+                         * though we're on the EDT.)
+                         * <p>
+                         * https://javafx-jira.kenai.com/browse/RT-35275
+                         */
+                        if (r[0] != null) {
+                            Platform.runLater(r[0]);
                         }
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.WARNING, "Can't move notice overlay to front", ex);
                     }
                 }
             }
         };
         getChildren().addListener(listener);
-        r[0] = new Runnable() {
-            @Override
-            public void run() {
-                getChildren().removeListener(listener);
-                pushLogoNoticeToFront();
-                getChildren().addListener(listener);
-            }
+        r[0] = () -> {
+            getChildren().removeListener(listener);
+            pushLogoNoticeToFront();
+            getChildren().addListener(listener);
         };
         noticeOverlay.setCache(true);
         getChildren().add(noticeOverlay);
-    }
-
-    public final boolean getPlayVideo() {
-        return playVideo;
     }
 
     /**
@@ -206,10 +176,6 @@ public class DisplayCanvas extends StackPane {
         }
     }
 
-    public void clearCurrentDisplayable() {
-        setCurrentDisplayable(null);
-    }
-
     public void clearNonPermanentChildren() {
         ObservableList<Node> list = FXCollections.observableArrayList(getChildren());
         for (Node node : list) {
@@ -217,20 +183,6 @@ public class DisplayCanvas extends StackPane {
                 getChildren().remove(node);
             }
         }
-    }
-
-    /**
-     * @return the currentDisplayable
-     */
-    public Displayable getCurrentDisplayable() {
-        return currentDisplayable;
-    }
-
-    /**
-     * @param currentDisplayable the currentDisplayable to set
-     */
-    public void setCurrentDisplayable(Displayable currentDisplayable) {
-        this.currentDisplayable = currentDisplayable;
     }
 
     /**
@@ -246,12 +198,9 @@ public class DisplayCanvas extends StackPane {
     }
 
     private void updateCanvas(final CanvasUpdater updater) {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                if (isVisibleInScene() && updater != null) {
-                    updater.updateCallback();
-                }
+        Platform.runLater(() -> {
+            if (isVisibleInScene() && updater != null) {
+                updater.updateCallback();
             }
         });
     }

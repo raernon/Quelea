@@ -17,11 +17,8 @@
  */
 package org.quelea.windows.multimedia;
 
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -30,9 +27,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.quelea.data.displayable.MultimediaDisplayable;
-import org.quelea.data.displayable.VideoDisplayable;
 import org.quelea.services.utils.QueleaProperties;
-import org.quelea.services.utils.Utils;
 import org.quelea.windows.main.AbstractPanel;
 import org.quelea.windows.main.DisplayCanvas;
 import org.quelea.windows.main.DisplayableDrawer;
@@ -49,7 +44,6 @@ public class MultimediaPanel extends AbstractPanel {
     private final MultimediaDrawer drawer;
     private final MultimediaControls controlPanel;
     private final Text previewText;
-    private final ImageView imgView;
     private MultimediaDisplayable displayable;
     private boolean live = false;
 
@@ -58,9 +52,10 @@ public class MultimediaPanel extends AbstractPanel {
      */
     public MultimediaPanel() {
         this.controlPanel = new MultimediaControls();
-        controlPanel.setDisableControls(true);
+        controlPanel.setDisableControls(false);
         drawer = new MultimediaDrawer(controlPanel);
-        imgView = new ImageView(new Image("file:icons/vid preview.png"));
+        DisplayCanvas vidPreview = new DisplayCanvas(false, this::updateCanvas, DisplayCanvas.Priority.LOW);
+        registerDisplayCanvas(vidPreview);
         BorderPane.setMargin(controlPanel, new Insets(30));
         setCenter(controlPanel);
         VBox centerBit = new VBox(5);
@@ -70,9 +65,9 @@ public class MultimediaPanel extends AbstractPanel {
         previewText.setFill(Color.WHITE);
         BorderPane.setMargin(centerBit, new Insets(10));
         centerBit.getChildren().add(previewText);
-        imgView.fitHeightProperty().bind(heightProperty().subtract(200));
-        imgView.fitWidthProperty().bind(widthProperty().subtract(20));
-        centerBit.getChildren().add(imgView);
+        vidPreview.prefHeightProperty().bind(heightProperty().subtract(200));
+        vidPreview.prefWidthProperty().bind(widthProperty().subtract(20));
+        centerBit.getChildren().add(vidPreview);
         setBottom(centerBit);
         setMinWidth(50);
         setMinHeight(50);
@@ -87,38 +82,16 @@ public class MultimediaPanel extends AbstractPanel {
                 QueleaApp.get().getMainWindow().getMainPanel().getLivePanel().previous();
             }
         });
-        
-        DisplayCanvas dummyCanvas = new DisplayCanvas(false, false, false, this::updateCanvas, DisplayCanvas.Priority.LOW);
-        registerDisplayCanvas(dummyCanvas);
     }
 
     @Override
     public void updateCanvas() {
         MultimediaDisplayable displayable = (MultimediaDisplayable) getCurrentDisplayable();
-        if (displayable instanceof VideoDisplayable) {
-            new Thread() {
-                @Override
-                public void run() {
-                    Image img = Utils.getVidBlankImage(((VideoDisplayable) displayable).getLocationAsFile());
-                    Platform.runLater(() -> {
-                        imgView.setImage(img);
-                    });
-                }
-            }.start();
-        }
         previewText.setText(displayable.getName());
-        boolean playVideo = false;
         for (DisplayCanvas canvas : getCanvases()) {
             drawer.setCanvas(canvas);
-            if (canvas.getPlayVideo()) {
-                playVideo = true;
-            }
-            canvas.setCurrentDisplayable(displayable);
-            drawer.setPlayVideo(canvas.getPlayVideo());
+            drawer.setPlayVideo();
             drawer.draw(displayable);
-        }
-        if (playVideo) {
-            controlPanel.setDisableControls(!playVideo);
         }
     }
 
@@ -188,18 +161,12 @@ public class MultimediaPanel extends AbstractPanel {
             return;
         }
         
-        if (live) {
-            drawer.setVisible(true);
-        }
         super.showDisplayable(displayable);
     }
     
     public void stopCurrent() {
         if (live && displayable != null) {
-            if (displayable != null) {
-                drawer.setVisible(false);
-                displayable = null;
-            }
+            displayable = null;
         }
     }
     
@@ -215,6 +182,7 @@ public class MultimediaPanel extends AbstractPanel {
      */
     @Override
     public void removeCurrentDisplayable() {
+        controlPanel.reset();
         super.removeCurrentDisplayable();
     }
 }

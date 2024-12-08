@@ -26,7 +26,6 @@ import org.quelea.services.utils.QueleaProperties;
 import org.quelea.services.utils.Utils;
 import org.quelea.windows.main.DisplayableDrawer;
 import org.quelea.windows.main.QueleaApp;
-import org.quelea.windows.multimedia.VLCWindow;
 
 /**
  *
@@ -38,10 +37,7 @@ public class ImageGroupDrawer extends DisplayableDrawer {
 
     @Override
     public void draw(Displayable displayable) {
-            clear();
-        if(getCanvas().getPlayVideo()) {
-            VLCWindow.INSTANCE.stop();
-        }
+        clear();
         imageView = getCanvas().getNewImageView();
         imageView.setFitWidth(getCanvas().getWidth());
         if(getCanvas().isStageView()) {

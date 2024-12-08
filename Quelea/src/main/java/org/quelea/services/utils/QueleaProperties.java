@@ -17,14 +17,6 @@
  */
 package org.quelea.services.utils;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.paint.Color;
@@ -34,7 +26,147 @@ import org.quelea.services.languages.spelling.Dictionary;
 import org.quelea.services.languages.spelling.DictionaryManager;
 import org.quelea.services.notice.NoticeDrawer.NoticePosition;
 
-import static org.quelea.services.utils.QueleaPropertyKeys.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+
+import static org.quelea.services.utils.QueleaPropertyKeys.activeSelectionColorKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.additionalLineSpacingKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.advanceOnLiveKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.autoDetectPortKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.autoTranslateKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.autoplayVidKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.blackFadeDurationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.blackStageviewWithMainKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.canvasDivposKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.capitalFirstKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.checkUpdateKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.chosenFontsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.churchCcliNumKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.clearFadeDurationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.clearLiveOnRemoveKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.clearStageviewWithMainKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.controlScreenKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.convertMp3Key;
+import static org.quelea.services.utils.QueleaPropertyKeys.darkThemeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.dbSongPreviewKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.defaultBibleKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.defaultSongDbUpdateKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.defaultTranslationName;
+import static org.quelea.services.utils.QueleaPropertyKeys.disableDirectShowForWVC1Key;
+import static org.quelea.services.utils.QueleaPropertyKeys.disableVideoKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.discussLocationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.displaySonginfotextKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.downloadPathKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.elevantoClientIdKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.enableDictKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.facebookPageKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.feedbackLocationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.globalBibleThemeFileKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.globalSongThemeFileKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.godWordsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.inactiveSelectionColorKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.itemThemeOverrideKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.languageFileKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.lastDirectoryKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.lastSchedulefileDirectoryKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.lastVideoDirectoryKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.libraryDivposKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.linkPreviewAndLiveDividers;
+import static org.quelea.services.utils.QueleaPropertyKeys.logoFadeDurationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.logoImageLocationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.lyricHeightBoundKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.lyricWidthBoundKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.lyricsTextBackgroundColor;
+import static org.quelea.services.utils.QueleaPropertyKeys.lyricsTextBackgroundEnable;
+import static org.quelea.services.utils.QueleaPropertyKeys.mainDivposKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.maxBibleCharsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.maxBibleVersesKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.maxCharsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.maxFontSizeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.minLinesKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.mobLyricsPortKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.noticeBackgroundColourKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.noticeBoxHeightKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.noticeBoxSpeedKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.noticeFontSizeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.noticePositionKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.noticeSpeedKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.oneLineModeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.ooOntopKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.ooPathKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.outlineThicknessKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.phonehomeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.planningCenterRefreshToken;
+import static org.quelea.services.utils.QueleaPropertyKeys.planningCentrePrevDaysKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.ppPathKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.preliveDivposKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.previewDivposKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.previewOnImageChangeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.projectorCoordsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.projectorModeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.projectorScreenKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.queleaScheduleExtensionKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.queleaSongpackExtensionKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.recPathKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.remoteControlPasswordKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.remoteControlPortKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.sceneInfoKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.scheduleEmbedMediaKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.showExtraLivePanelToolbarOptionsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.showSmallBibleTextKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.showSmallSongTextKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.showVerseNumbersKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.singleMonitorWarningKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.slideTransitionInDurationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.slideTransitionOutDurationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.smallBibleTextHPositionKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.smallBibleTextSizeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.smallBibleTextVPositionKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.smallSongTextHPositionKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.smallSongTextShowOnSlidesKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.smallSongTextSizeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.smallSongTextVPositionKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.songOverflowKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.splitBibleVersesKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageBackgroundColorKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageChordColorKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageCoordsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageFontKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageLyricsColorKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageModeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageScreenKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageShowChordsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageShowClockKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.stageTextAlignmentKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.textShadowKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.thumbnailSizeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.translateClientIdKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.translateClientSecretKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.translationFontSizeOffsetKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.uniformFontSizeKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.use24hClockKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.useAutoExtendKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.useDefaultTranslation;
+import static org.quelea.services.utils.QueleaPropertyKeys.useMaxBibleCharsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.useMobLyricsKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.useOoKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.usePpKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.useRemoteControlKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.useSlideTransitionKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.useVlcJavafxRenderingKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.videoTabKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.webProxyHostKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.webProxyPasswordKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.webProxyPortKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.webProxyUserKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.webRefreshRateKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.websiteLocationKey;
+import static org.quelea.services.utils.QueleaPropertyKeys.wikiPageKey;
 
 /**
  * Manages the properties specific to Quelea.
@@ -44,7 +176,7 @@ import static org.quelea.services.utils.QueleaPropertyKeys.*;
  */
 public final class QueleaProperties extends SortedProperties {
 
-    public static final Version VERSION = new Version("2022.0", VersionType.CI);
+    public static final Version VERSION = new Version("2024.1", VersionType.CI);
     private static QueleaProperties INSTANCE;
     private String userHome;
 
@@ -305,6 +437,7 @@ public final class QueleaProperties extends SortedProperties {
         setProperty(previewDivposKey, Double.toString(val));
         write();
     }
+
     /**
      * Set the library divider position property.
      *
@@ -755,6 +888,14 @@ public final class QueleaProperties extends SortedProperties {
         setProperty(thumbnailSizeKey, Integer.toString(thumbnailSize));
     }
 
+    public int getPlanningCentrePrevDays() {
+        return Integer.parseInt(getProperty(planningCentrePrevDaysKey, "31"));
+    }
+
+    public void setPlanningCentrePrevDays(int days) {
+        setProperty(planningCentrePrevDaysKey, Integer.toString(days));
+    }
+
     public boolean getUseDefaultTranslation() {
         return Boolean.parseBoolean(getProperty(useDefaultTranslation, "false"));
     }
@@ -797,7 +938,7 @@ public final class QueleaProperties extends SortedProperties {
      *
      * @return true if the preview and live dividers should be linked, else false
      */
-    public boolean getLinkPreviewAndLiveDividers(){
+    public boolean getLinkPreviewAndLiveDividers() {
         return Boolean.parseBoolean(getProperty(linkPreviewAndLiveDividers, "true"));
     }
 
@@ -842,7 +983,7 @@ public final class QueleaProperties extends SortedProperties {
      * @return the location of the facebook page.
      */
     public String getWikiPageLocation() {
-        return getProperty(wikiPageKey, "http://quelea.org/wiki/index.php/Main_Page");
+        return getProperty(wikiPageKey, "http://quelea.org/wiki/");
     }
 
     /**
@@ -1121,7 +1262,7 @@ public final class QueleaProperties extends SortedProperties {
      * * <p/>
      *
      * @param extend true if it should automatically move projection screen,
-     * false otherwise.
+     *               false otherwise.
      */
     public void setUseAutoExtend(boolean extend) {
         setProperty(useAutoExtendKey, Boolean.toString(extend));
@@ -1144,7 +1285,7 @@ public final class QueleaProperties extends SortedProperties {
      * <p>
      *
      * @param maxChars the maximum number of characters allowed on any one line
-     * of projected text.
+     *                 of projected text.
      */
     public void setMaxChars(int maxChars) {
         setProperty(maxCharsKey, Integer.toString(maxChars));
@@ -1422,7 +1563,7 @@ public final class QueleaProperties extends SortedProperties {
      * @return the URL to download Quelea.
      */
     public String getDownloadLocation() {
-        return "https://sourceforge.net/projects/quelea/files/";
+        return "https://github.com/quelea-projection/Quelea/releases/";
     }
 
     /**
@@ -1759,8 +1900,8 @@ public final class QueleaProperties extends SortedProperties {
     public String[] getGodWords() {
         return getProperty(godWordsKey,
                 "god,God,jesus,Jesus,christ,Christ,you,You,he,He,lamb,Lamb,"
-                + "lord,Lord,him,Him,son,Son,i,I,his,His,your,Your,king,King,"
-                + "saviour,Saviour,savior,Savior,majesty,Majesty,alpha,Alpha,omega,Omega") //Yeah.. default testing properties.
+                        + "lord,Lord,him,Him,son,Son,i,I,his,His,your,Your,king,King,"
+                        + "saviour,Saviour,savior,Savior,majesty,Majesty,alpha,Alpha,omega,Omega") //Yeah.. default testing properties.
                 .trim().split(",");
     }
 
@@ -1826,7 +1967,7 @@ public final class QueleaProperties extends SortedProperties {
      * <p>
      *
      * @param val if we should use openoffice, false if we should just use the
-     * basic POI images.
+     *            basic POI images.
      */
     public void setUseOO(boolean val) {
         setProperty(useOoKey, Boolean.toString(val));
@@ -1870,7 +2011,7 @@ public final class QueleaProperties extends SortedProperties {
      * <p/>
      *
      * @param val if we should use PowerPoint, false if we should just use the
-     * basic POI images or openoffice.
+     *            basic POI images or openoffice.
      */
     public void setUsePP(boolean val) {
         setProperty(usePpKey, Boolean.toString(val));
@@ -1955,7 +2096,7 @@ public final class QueleaProperties extends SortedProperties {
      * <p>
      *
      * @param val if we should use covert to MP#, false if we should just store
-     * recordings as WAV files.
+     *            recordings as WAV files.
      */
     public void setConvertRecordings(boolean val) {
         setProperty(convertMp3Key, Boolean.toString(val));
@@ -1992,7 +2133,7 @@ public final class QueleaProperties extends SortedProperties {
      * @return the logo image
      */
     public String getLogoImageURI() {
-        return "file:" + getProperty(logoImageLocationKey, "icons/logo default.png");
+        return new File(getProperty(logoImageLocationKey, "icons/logo default.png")).toURI().toString();
     }
 
     /**
@@ -2116,6 +2257,15 @@ public final class QueleaProperties extends SortedProperties {
         write();
     }
 
+    public String getSmallSongTextShowOnSlides() {
+        return getProperty(smallSongTextShowOnSlidesKey, "all");
+    }
+
+    public void setSmallSongTextShowOnSlides(String showOnSlides) {
+        setProperty(smallSongTextShowOnSlidesKey, showOnSlides);
+        write();
+    }
+
     public String getSmallBibleTextPositionH() {
         return getProperty(smallBibleTextHPositionKey, "right");
     }
@@ -2206,7 +2356,7 @@ public final class QueleaProperties extends SortedProperties {
      * <p>
      *
      * @param maxChars the maximum number of characters allowed on any one line
-     * of bible text.
+     *                 of bible text.
      */
     public void setMaxBibleChars(int maxChars) {
         setProperty(maxBibleCharsKey, Integer.toString(maxChars));
@@ -2302,6 +2452,19 @@ public final class QueleaProperties extends SortedProperties {
         write();
     }
 
+    public boolean getBlackStageWithMain() {
+        return Boolean.parseBoolean(getProperty(blackStageviewWithMainKey, "true"));
+    }
+
+    public void setBlackStageWithMain(boolean black) {
+        setProperty(blackStageviewWithMainKey, Boolean.toString(black));
+        write();
+    }
+
+    public boolean getDisableVideo() {
+        return Boolean.parseBoolean(getProperty(disableVideoKey, "false"));
+    }
+
     /**
      * Get the directory used for storing countdown timers.
      * <p>
@@ -2325,7 +2488,9 @@ public final class QueleaProperties extends SortedProperties {
         return Integer.parseInt(getProperty(autoDetectPortKey, "50015"));
     }
 
-    public boolean getStageShowClock() { return Boolean.parseBoolean(getProperty(stageShowClockKey, "true")); }
+    public boolean getStageShowClock() {
+        return Boolean.parseBoolean(getProperty(stageShowClockKey, "true"));
+    }
 
     public boolean getUse24HourClock() {
         return Boolean.parseBoolean(getProperty(use24hClockKey, "true"));
@@ -2412,6 +2577,9 @@ public final class QueleaProperties extends SortedProperties {
         return new File(getQueleaUserHome(), "notices");
     }
 
+    public String[] getAddAndGoLiveKeys() {
+        return getProperty("add.and.go.live.keys", "Ctrl,Alt,L").split(",");
+    }
     public String[] getNewSongKeys() {
         return getProperty("new.song.keys", "Ctrl,Alt,N").split(",");
     }
@@ -2463,7 +2631,7 @@ public final class QueleaProperties extends SortedProperties {
     public String[] getBibleFocusKeys() {
         return getProperty("bible.focus.keys", "Ctrl,B").split(",");
     }
-    
+
     /**
      * Set whether fade should be used.
      *
@@ -2524,5 +2692,9 @@ public final class QueleaProperties extends SortedProperties {
 
     public void setUseDarkTheme(boolean useDarkTheme) {
         setProperty(darkThemeKey, String.valueOf(useDarkTheme));
+    }
+
+    public boolean getDisableDirectShowForWVC1() {
+        return Boolean.parseBoolean(getProperty(disableDirectShowForWVC1Key, "true"));
     }
 }

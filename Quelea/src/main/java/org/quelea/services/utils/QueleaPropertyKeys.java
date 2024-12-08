@@ -31,6 +31,7 @@ public class QueleaPropertyKeys {
     public static final String maxFontSizeKey = "max.font.size";
     public static final String additionalLineSpacingKey = "additional.line.spacing";
     public static final String thumbnailSizeKey = "thumbnail.size";
+    public static final String planningCentrePrevDaysKey = "planning.center.prev.days";
     public static final String showExtraLivePanelToolbarOptionsKey = "show.extra.live.panel.toolbar.options";
     public static final String linkPreviewAndLiveDividers = "link.preview.and.live.dividers";
     public static final String clearLiveOnRemoveKey = "clear.live.on.remove";
@@ -94,6 +95,7 @@ public class QueleaPropertyKeys {
     public static final String smallSongTextHPositionKey = "small.song.text.h.position";
     public static final String smallSongTextVPositionKey = "small.song.text.v.position";
     public static final String smallSongTextSizeKey = "small.song.text.size";
+    public static final String smallSongTextShowOnSlidesKey = "small.song.text.show.on.slides";
     public static final String smallBibleTextHPositionKey = "small.bible.text.h.position";
     public static final String smallBibleTextVPositionKey = "small.bible.text.v.position";
     public static final String smallBibleTextSizeKey = "small.bible.text.size";
@@ -108,6 +110,8 @@ public class QueleaPropertyKeys {
     public static final String translateClientIdKey = "translate.client.id";
     public static final String translateClientSecretKey = "translate.client.secret";
     public static final String clearStageviewWithMainKey = "clear.stageview.with.main";
+    public static final String blackStageviewWithMainKey = "black.stageview.with.main";
+    public static final String disableVideoKey = "disable.video";
     public static final String songOverflowKey = "song.overflow";
     public static final String autoDetectPortKey = "auto.detect.port";
     public static final String stageShowClockKey = "stage.show.clock";
@@ -137,5 +141,6 @@ public class QueleaPropertyKeys {
     public static final String slideTransitionOutDurationKey = "slide.transition.duration.out";
     public static final String useDefaultTranslation = "use.default.translation";
     public static final String defaultTranslationName = "default.translation.name";
+    public static final String disableDirectShowForWVC1Key = "disable.directshow.for.wvc1";
 
 }

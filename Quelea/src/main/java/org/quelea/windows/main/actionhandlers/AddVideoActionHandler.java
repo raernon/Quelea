@@ -50,12 +50,6 @@ public class AddVideoActionHandler implements EventHandler<ActionEvent> {
                 QueleaProperties.get().setLastVideoDirectory(file.getParentFile());
                 VideoDisplayable displayable = new VideoDisplayable(file.getAbsolutePath());
                 QueleaApp.get().getMainWindow().getMainPanel().getSchedulePanel().getScheduleList().add(displayable);
-                new Thread() {
-                    @Override
-                    public void run() {
-                        Utils.getVidBlankImage(file); //Cache preview image
-                    }
-                }.start();
             }
         }
     }

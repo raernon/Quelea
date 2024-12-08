@@ -1,17 +1,17 @@
-/* 
+/*
  * This file is part of Quelea, free projection software for churches.
- * 
- * 
+ *
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -39,6 +39,7 @@ import org.quelea.windows.main.QueleaApp;
 /**
  * A panel used in the live / preview panels for playing audio.
  * <p/>
+ *
  * @author tomaszpio@gmail.com, Ben
  */
 public class TimerPanel extends AbstractPanel {
@@ -46,17 +47,17 @@ public class TimerPanel extends AbstractPanel {
     private final TimerDrawer drawer;
     private final TimerControls controlPanel;
     private final Text previewText;
+    private final DisplayCanvas timerPreview;
 
     /**
      * Create a new image panel.
      */
     public TimerPanel() {
         this.controlPanel = new TimerControls();
-        controlPanel.setDisableControls(true);
+        controlPanel.setDisableControls(false);
         drawer = new TimerDrawer(controlPanel);
-        ImageView img = new ImageView(new Image("file:icons/vid preview.png"));
         BorderPane.setMargin(controlPanel, new Insets(30));
-        setCenter(controlPanel);
+        setTop(controlPanel);
         VBox centerBit = new VBox(5);
         centerBit.setAlignment(Pos.CENTER);
         previewText = new Text();
@@ -64,14 +65,16 @@ public class TimerPanel extends AbstractPanel {
         previewText.setFill(Color.WHITE);
         BorderPane.setMargin(centerBit, new Insets(10));
         centerBit.getChildren().add(previewText);
-        img.fitHeightProperty().bind(heightProperty().subtract(200));
-        img.fitWidthProperty().bind(widthProperty().subtract(20));
-        centerBit.getChildren().add(img);
-        setBottom(centerBit);
+        timerPreview = new DisplayCanvas(false, this::updateCanvas, DisplayCanvas.Priority.LOW);
+        registerDisplayCanvas(timerPreview);
+        centerBit.getChildren().add(timerPreview);
+        timerPreview.prefHeightProperty().bind(heightProperty().subtract(200));
+        timerPreview.prefWidthProperty().bind(widthProperty().subtract(20));
+        setCenter(centerBit);
         setMinWidth(50);
         setMinHeight(50);
         setStyle("-fx-background-color:grey;");
-        
+
         addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent t) -> {
             if (t.getCode().equals(KeyCode.PAGE_DOWN) || t.getCode().equals(KeyCode.DOWN)) {
                 t.consume();
@@ -81,39 +84,28 @@ public class TimerPanel extends AbstractPanel {
                 QueleaApp.get().getMainWindow().getMainPanel().getLivePanel().previous();
             }
         });
-        
-        
-        DisplayCanvas dummyCanvas = new DisplayCanvas(false, false, false, this::updateCanvas, DisplayCanvas.Priority.LOW);
-        registerDisplayCanvas(dummyCanvas);
+
+
     }
 
     @Override
     public void updateCanvas() {
         MultimediaDisplayable displayable = (MultimediaDisplayable) getCurrentDisplayable();
         previewText.setText(displayable.getName());
-        boolean playVideo = false;
         for (DisplayCanvas canvas : getCanvases()) {
             drawer.setCanvas(canvas);
-            if (canvas.getPlayVideo()) {
-                playVideo = true;
-            }
-            canvas.setCurrentDisplayable(displayable);
-            drawer.setPlayVideo(canvas.getPlayVideo());
             drawer.draw(displayable);
-        }
-        if (playVideo) {
-            controlPanel.setDisableControls(!playVideo);
         }
     }
 
     public void play() {
         controlPanel.play(false);
     }
-    
+
     public void togglePause() {
         controlPanel.togglePause();
     }
-    
+
     public boolean status() {
         return controlPanel.status();
     }

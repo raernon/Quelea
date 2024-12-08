@@ -1,17 +1,17 @@
-/* 
+/*
  * This file is part of Quelea, free projection software for churches.
- * 
- * 
+ *
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -36,11 +36,13 @@ import org.quelea.windows.main.QueleaApp;
 import org.quelea.windows.main.WordDrawer;
 import org.quelea.windows.main.widgets.DisplayPreview;
 import org.quelea.windows.stage.StageDrawer;
+
 import java.util.logging.Logger;
 
 /**
  * The panel where the lyrics for different songs can be selected.
  * <p/>
+ *
  * @author Michael
  */
 public class SelectLyricsPanel extends AbstractPanel {
@@ -55,6 +57,7 @@ public class SelectLyricsPanel extends AbstractPanel {
     /**
      * Create a new lyrics panel.
      * <p/>
+     *
      * @param containerPanel the container panel this panel is contained within.
      */
     public SelectLyricsPanel(LivePreviewPanel containerPanel) {
@@ -63,7 +66,7 @@ public class SelectLyricsPanel extends AbstractPanel {
         splitPane = new SplitPane();
         splitPane.setOrientation(Orientation.VERTICAL);
         lyricsList = new SelectLyricsList();
-        previewCanvas = new DisplayCanvas(false, false, false, this::updateCanvas, Priority.LOW);
+        previewCanvas = new DisplayCanvas(false, this::updateCanvas, Priority.LOW);
         DisplayPreview preview = new DisplayPreview(previewCanvas);
         splitPane.getItems().add(lyricsList);
         splitPane.getItems().add(preview);
@@ -100,6 +103,7 @@ public class SelectLyricsPanel extends AbstractPanel {
     /**
      * Set one line mode on or off.
      * <p/>
+     *
      * @param on if one line mode should be turned on, false otherwise.
      */
     public void setOneLineMode(boolean on) {
@@ -114,11 +118,11 @@ public class SelectLyricsPanel extends AbstractPanel {
     /**
      * Show a given text displayable on this panel.
      * <p/>
+     *
      * @param displayable the displayable to show.
-     * @param index the index of the displayable to show.
+     * @param index       the index of the displayable to show.
      */
     public void showDisplayable(TextDisplayable displayable, int index) {
-//        removeCurrentDisplayable();
         setCurrentDisplayable(displayable);
         lyricsList.itemsProperty().get().clear();
         lyricsList.setShowQuickEdit(displayable instanceof SongDisplayable);
@@ -132,6 +136,7 @@ public class SelectLyricsPanel extends AbstractPanel {
     /**
      * Get the current displayed index.
      * <p/>
+     *
      * @return the current displayed index.
      */
     public int getIndex() {
@@ -141,6 +146,7 @@ public class SelectLyricsPanel extends AbstractPanel {
     /**
      * Get the length of the item on this panel.
      * <p/>
+     *
      * @return the length of the item on this panel.
      */
     public int getSlideCount() {
@@ -200,6 +206,7 @@ public class SelectLyricsPanel extends AbstractPanel {
     /**
      * Get the lyrics list on this panel.
      * <p/>
+     *
      * @return the select lyrics list.
      */
     public SelectLyricsList getLyricsList() {
@@ -232,20 +239,17 @@ public class SelectLyricsPanel extends AbstractPanel {
             }
             drawer.setCanvas(canvas);
             if (selectedIndex == -1 || selectedIndex >= lyricsList.itemsProperty().get().size()) {
-                if (!canvas.getPlayVideo()) {
-                    drawer.setTheme(ThemeDTO.DEFAULT_THEME);
-                }
+                drawer.setTheme(ThemeDTO.DEFAULT_THEME);
                 drawer.eraseText();
                 continue;
             }
             TextSection currentSection = lyricsList.itemsProperty().get().get(selectedIndex);
             GlobalThemeStore themeStore = QueleaApp.get().getMainWindow().getGlobalThemeStore();
-            
-            drawer.setTheme(themeStore.getTheme((TextDisplayable)getCurrentDisplayable(), currentSection));
-            
+
+            drawer.setTheme(themeStore.getTheme((TextDisplayable) getCurrentDisplayable(), currentSection));
+
             drawer.setCapitaliseFirst(currentSection.shouldCapitaliseFirst());
             drawer.setText((TextDisplayable) getCurrentDisplayable(), selectedIndex);
-            canvas.setCurrentDisplayable(getCurrentDisplayable());
         }
     }
 

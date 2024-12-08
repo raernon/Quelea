@@ -1,7 +1,7 @@
 /*
  * This file is part of Quelea, free projection software for churches.
- * 
- * 
+ *
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,12 @@
  */
 package org.quelea.windows.main.actionhandlers;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import org.javafx.dialog.Dialog;
 import org.quelea.data.displayable.ImageDisplayable;
@@ -33,10 +31,16 @@ import org.quelea.data.displayable.ImageGroupDisplayable;
 import org.quelea.services.languages.LabelGrabber;
 import org.quelea.services.utils.FileFilters;
 import org.quelea.services.utils.LoggerUtils;
-import org.quelea.services.utils.QueleaProperties;
 import org.quelea.services.utils.Utils;
 import org.quelea.windows.main.QueleaApp;
 import org.quelea.windows.main.StatusPanel;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The action handler for adding images.
@@ -62,42 +66,35 @@ public class AddImageActionHandler implements EventHandler<ActionEvent> {
 
                     @Override
                     public void run() {
-                        Platform.runLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                panel = QueleaApp.get().getStatusGroup().addPanel(LabelGrabber.INSTANCE.getLabel("adding.images"));
-                                panel.getProgressBar().setProgress(-1);
-                                panel.getCancelButton().setOnAction(new EventHandler<ActionEvent>() {
-
-                                    @Override
-                                    public void handle(ActionEvent t) {
-                                        panel.done();
-                                        halt = true;
-                                    }
-                                });
-                            }
+                        Platform.runLater(() -> {
+                            panel = QueleaApp.get().getStatusGroup().addPanel(LabelGrabber.INSTANCE.getLabel("adding.images"));
+                            panel.getProgressBar().setProgress(-1);
+                            panel.getCancelButton().setOnAction(t1 -> {
+                                panel.done();
+                                halt = true;
+                            });
                         });
                         try {
                             if (!halt) {
-                                Platform.runLater(new Runnable() {
+                                Platform.runLater(() -> {
+                                    File[] filesArray = files.toArray(new File[0]);
 
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            ImageGroupDisplayable displayable = new ImageGroupDisplayable(files.toArray(new File[files.size()]));
-                                            QueleaApp.get().getMainWindow().getMainPanel().getSchedulePanel().getScheduleList().add(displayable);
-                                        } catch (IOException ex) {
-                                            System.err.println("IO " + ex);
-                                            if (!halt) {
-                                                Platform.runLater(new Runnable() {
+                                    TextInputDialog dialog = new TextInputDialog();
+                                    dialog.setTitle(LabelGrabber.INSTANCE.getLabel("dialog.image.group.title"));
+                                    dialog.setHeaderText(LabelGrabber.INSTANCE.getLabel("dialog.image.group.header"));
+                                    dialog.setGraphic(new ImageView(new Image("file:icons/image-group-schedule.png")));
 
-                                                    @Override
-                                                    public void run() {
-                                                        Dialog.showError(LabelGrabber.INSTANCE.getLabel("adding.presentation.error.title"), LabelGrabber.INSTANCE.getLabel("adding.presentation.error.message"));
-                                                    }
-                                                });
-                                            }
+                                    String fallbackTitle = ImageGroupDisplayable.concatenatedFileNames(filesArray);
+                                    dialog.getEditor().setText(fallbackTitle);
+                                    Optional<String> result = dialog.showAndWait();
+                                    String imageGroupTitle = result.orElse(fallbackTitle);
+                                    try {
+                                        ImageGroupDisplayable displayable = new ImageGroupDisplayable(filesArray, imageGroupTitle);
+                                        QueleaApp.get().getMainWindow().getMainPanel().getSchedulePanel().getScheduleList().add(displayable);
+                                    } catch (IOException ex) {
+                                        System.err.println("IO " + ex);
+                                        if (!halt) {
+                                            Platform.runLater(() -> Dialog.showError(LabelGrabber.INSTANCE.getLabel("adding.presentation.error.imageGroupTitle"), LabelGrabber.INSTANCE.getLabel("adding.presentation.error.message")));
                                         }
                                     }
                                 });
@@ -105,13 +102,7 @@ public class AddImageActionHandler implements EventHandler<ActionEvent> {
                         } catch (RuntimeException ex) {
                             System.err.println("RE " + ex);
                             LOGGER.log(Level.WARNING, "Couldn't import presentation", ex);
-                            Platform.runLater(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    Dialog.showError(LabelGrabber.INSTANCE.getLabel("adding.presentation.error.title"), LabelGrabber.INSTANCE.getLabel("adding.presentation.error.message"));
-                                }
-                            });
+                            Platform.runLater(() -> Dialog.showError(LabelGrabber.INSTANCE.getLabel("adding.presentation.error.title"), LabelGrabber.INSTANCE.getLabel("adding.presentation.error.message")));
                         }
                         while (panel == null) {
                             Utils.sleep(1000); //Quick bodge but hey, it works

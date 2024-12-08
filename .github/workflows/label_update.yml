@@ -1,0 +1,39 @@
+name: Update missing labels
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  update-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Java
+        run: |
+          curl -O https://cdn.azul.com/zulu/bin/zulu21.32.17-ca-fx-jdk21.0.2-linux_amd64.deb
+          sudo apt-get -y install ./zulu21.32.17-ca-fx-jdk21.0.2-linux_amd64.deb
+      - name: Checkout main source
+        uses: actions/checkout@v4
+        with:
+          path: 'main'
+      - name: Checkout doc source
+        env:
+          QBOT_TOKEN: ${{ secrets.QBOT_TOKEN }}
+        run: |
+          git clone https://quelea-bot:${QBOT_TOKEN}@github.com/quelea-projection/quelea-projection.github.io.git ./doc
+      - name: Find missing labels
+        run: |
+          cd main/Quelea
+          export JAVA_HOME=/usr/lib/jvm/zulu-fx-21-amd64/
+          chmod +x gradlew
+          chmod +x build-install.sh
+          ./gradlew -Dnightly=true -Dversionsuffix=CI-UNSTABLE labelcheck
+          cd ../..
+          cp main/Quelea/dist/missinglabels.js doc/lang/
+          cd doc
+          git add lang/missinglabels.js
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "Update missing labels file" || true
+          git push

@@ -21,7 +21,6 @@ package org.quelea.windows.library;
 import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import org.quelea.data.ThemeDTO;
@@ -47,11 +46,10 @@ public class LibrarySongPreviewCanvas extends StackPane {
      */
     public LibrarySongPreviewCanvas() {
         setMaxSize(250, 167);
-        canvas = new DisplayCanvas(false, false, false, this::updateCanvas, DisplayCanvas.Priority.LOW);
+        canvas = new DisplayCanvas(false, this::updateCanvas, DisplayCanvas.Priority.LOW);
         canvas.setMaxSize(250, 167);
         getChildren().add(canvas);
         setOpacity(0);
-//        setStyle("-fx-background-color: #555555;");
         setVisible(false);
         setMouseTransparent(true);
     }
@@ -67,7 +65,6 @@ public class LibrarySongPreviewCanvas extends StackPane {
             drawer.setTheme(newTheme);
             drawer.setCapitaliseFirst(currentSection.shouldCapitaliseFirst());
             drawer.setText(displayable, 0);
-            canvas.setCurrentDisplayable(displayable);
         }
     }
 

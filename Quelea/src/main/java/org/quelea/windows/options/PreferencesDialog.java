@@ -20,12 +20,10 @@ package org.quelea.windows.options;
 import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.StringField;
 import com.dlsc.preferencesfx.PreferencesFx;
-import com.dlsc.preferencesfx.formsfx.view.controls.SimpleComboBoxControl;
 import com.dlsc.preferencesfx.formsfx.view.controls.SimpleControl;
 import com.dlsc.preferencesfx.model.Setting;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -52,7 +50,6 @@ import org.quelea.services.utils.QueleaProperties;
 import org.quelea.services.utils.Utils;
 import org.quelea.windows.main.DisplayStage;
 import org.quelea.windows.main.QueleaApp;
-import org.quelea.windows.multimedia.VLCWindow;
 import org.quelea.windows.options.customprefs.ColorPickerPreference;
 
 import java.util.HashMap;
@@ -195,6 +192,17 @@ public class PreferencesDialog extends Stage {
         return setting;
     }
 
+    public static Setting getShowOnSlidesSelector(String label, String selectedValue, BooleanProperty booleanBind, HashMap<Field, ObservableValue> bindings) {
+        Setting setting = Setting.of(label, FXCollections.observableArrayList(
+                LabelGrabber.INSTANCE.getLabel("all"),
+                LabelGrabber.INSTANCE.getLabel("first"),
+                LabelGrabber.INSTANCE.getLabel("last")),
+                new SimpleObjectProperty<>(LabelGrabber.INSTANCE.getLabel(selectedValue.toLowerCase())));
+        if (booleanBind != null)
+            bindings.put((Field) setting.getElement(), booleanBind.not());
+        return setting;
+    }
+
     public void updatePos() {
         DisplayStage appWindow = QueleaApp.get().getProjectionWindow();
         DisplayStage stageWindow = QueleaApp.get().getStageWindow();
@@ -222,7 +230,6 @@ public class PreferencesDialog extends Stage {
             if (!QueleaProperties.get().isProjectorModeCoords()) {
                 if (QueleaProperties.get().getProjectorScreen() == -1) {
                     fiLyricWindow.hide();
-                    VLCWindow.INSTANCE.refreshPosition();
                 } else {
                     fiLyricWindow.setFullScreenAlwaysOnTop(true);
                 }

@@ -60,7 +60,6 @@ import org.quelea.windows.main.actionhandlers.RecordingsHandler;
 import org.quelea.windows.main.schedule.ScheduleList;
 import org.quelea.windows.main.schedule.ScheduleThemeNode;
 import org.quelea.windows.main.toolbars.MainToolbar;
-import org.quelea.windows.multimedia.VLCWindow;
 import org.quelea.windows.newsong.SongEntryWindow;
 
 /**
@@ -116,11 +115,7 @@ public class RCHandler {
             int current = p.getSchedulePanel().getScheduleList().getItems().indexOf(p.getLivePanel().getDisplayable());
             current--;
             p.getSchedulePanel().getScheduleList().getSelectionModel().clearSelection();
-            if (current > 0) {
-                p.getSchedulePanel().getScheduleList().getSelectionModel().select(current);
-            } else {
-                p.getSchedulePanel().getScheduleList().getSelectionModel().select(0);
-            }
+            p.getSchedulePanel().getScheduleList().getSelectionModel().select(Math.max(current,0));
             p.getPreviewPanel().goLive();
         });
     }
@@ -224,19 +219,15 @@ public class RCHandler {
                 return LabelGrabber.INSTANCE.getLabel("play");
             }
         }
-        if (VLCWindow.INSTANCE.isPlaying()) {
-            return LabelGrabber.INSTANCE.getLabel("pause");
-        } else {
-            return LabelGrabber.INSTANCE.getLabel("play");
-        }
+        return LabelGrabber.INSTANCE.getLabel("play");
+//        else if (lp.getVideoPanel().isPlaying()) {
+//            return LabelGrabber.INSTANCE.getLabel("pause");
+//        } else {
+//            return LabelGrabber.INSTANCE.getLabel("play");
+//        }
     }
 
     public static void play() {
-        if (VLCWindow.INSTANCE.isPlaying()) {
-            VLCWindow.INSTANCE.pause();
-        } else {
-            VLCWindow.INSTANCE.play();
-        }
         LivePanel lp = QueleaApp.get().getMainWindow().getMainPanel().getLivePanel();
         if (lp.getDisplayable() instanceof TimerDisplayable) {
             lp.getTimerPanel().togglePause();
@@ -289,7 +280,7 @@ public class RCHandler {
         return display;
     }
 
-    public static String databaseSearch(HttpExchange he) throws UnsupportedEncodingException, IOException {
+    public static String databaseSearch(HttpExchange he) throws IOException {
         String searchString;
         if (he.getRequestURI().toString().contains("/search/")) {
             String uri = URLDecoder.decode(he.getRequestURI().toString(), "UTF-8");
@@ -337,6 +328,12 @@ public class RCHandler {
             songID = Long.parseLong(songIDString);
             SongDisplayable sd = SongManager.get().getIndex().getByID(songID);
 
+            if (QueleaProperties.get().getUseDefaultTranslation()) {
+                String defaultTranslation = QueleaProperties.get().getDefaultTranslationName();
+                if (defaultTranslation != null && !defaultTranslation.trim().isEmpty()) {
+                    sd.setCurrentTranslationLyrics(defaultTranslation);
+                }
+            }
             Utils.fxRunAndWait(() -> {
                 QueleaApp.get().getMainWindow().getMainPanel().getSchedulePanel().getScheduleList().add(sd);
             });

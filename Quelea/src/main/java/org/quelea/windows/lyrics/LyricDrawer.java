@@ -21,8 +21,8 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import javafx.animation.FadeTransition;
@@ -61,9 +61,9 @@ import org.quelea.services.utils.Utils;
 import org.quelea.windows.main.QueleaApp;
 import org.quelea.windows.main.WordDrawer;
 import org.quelea.windows.main.widgets.DisplayPositionSelector;
-import org.quelea.windows.multimedia.VLCWindow;
 import org.quelea.utils.FXFontMetrics;
 import org.quelea.utils.WrapTextResult;
+import org.quelea.windows.video.VidDisplay;
 
 /**
  * Responsible for drawing lyrics and their background.
@@ -84,6 +84,7 @@ public class LyricDrawer extends WordDrawer {
     private Group oldTextGroup;
     private String[] oldText;
     private boolean newItem;
+    private VidDisplay vidDisplay;
 
     public LyricDrawer() {
         text = new String[]{};
@@ -91,6 +92,8 @@ public class LyricDrawer extends WordDrawer {
         textGroup = new Group();
         smallTextGroup = new Group();
         lastClearedState = new HashMap<>();
+        vidDisplay = new VidDisplay();
+        vidDisplay.setLoop(true);
     }
 
     protected void drawText(double defaultFontSize, boolean dumbWrap) {
@@ -198,41 +201,35 @@ public class LyricDrawer extends WordDrawer {
         smallTextGroup.setEffect(smallshadow);
 
         if (curDisplayable instanceof BiblePassage) {
-            if (QueleaProperties.get().getSmallBibleTextPositionV().toLowerCase().equals("top")) {
-                if (QueleaProperties.get().getSmallBibleTextPositionH().toLowerCase().equals("left")) {
+            if (QueleaProperties.get().getSmallBibleTextPositionV().equalsIgnoreCase("top")) {
+                if (QueleaProperties.get().getSmallBibleTextPositionH().equalsIgnoreCase("left")) {
                     StackPane.setAlignment(smallTextGroup, Pos.TOP_LEFT);
                 } else {
                     StackPane.setAlignment(smallTextGroup, Pos.TOP_RIGHT);
                 }
             } else {
-                if (QueleaProperties.get().getSmallBibleTextPositionH().toLowerCase().equals("left")) {
+                if (QueleaProperties.get().getSmallBibleTextPositionH().equalsIgnoreCase("left")) {
                     StackPane.setAlignment(smallTextGroup, Pos.BOTTOM_LEFT);
                 } else {
                     StackPane.setAlignment(smallTextGroup, Pos.BOTTOM_RIGHT);
                 }
             }
         } else {
-            if (QueleaProperties.get().getSmallSongTextPositionV().toLowerCase().equals("top")) {
-                if (QueleaProperties.get().getSmallSongTextPositionH().toLowerCase().equals("left")) {
+            if (QueleaProperties.get().getSmallSongTextPositionV().equalsIgnoreCase("top")) {
+                if (QueleaProperties.get().getSmallSongTextPositionH().equalsIgnoreCase("left")) {
                     StackPane.setAlignment(smallTextGroup, Pos.TOP_LEFT);
                 } else {
                     StackPane.setAlignment(smallTextGroup, Pos.TOP_RIGHT);
                 }
             } else {
-                if (QueleaProperties.get().getSmallSongTextPositionH().toLowerCase().equals("left")) {
+                if (QueleaProperties.get().getSmallSongTextPositionH().equalsIgnoreCase("left")) {
                     StackPane.setAlignment(smallTextGroup, Pos.BOTTOM_LEFT);
                 } else {
                     StackPane.setAlignment(smallTextGroup, Pos.BOTTOM_RIGHT);
                 }
             }
         }
-
-        for (Iterator<Node> it = getCanvas().getChildren().iterator(); it.hasNext(); ) {
-            Node node = it.next();
-            if (node instanceof Group) {
-                it.remove();
-            }
-        }
+        getCanvas().getChildren().removeIf(node -> node instanceof Group);
 
         getCanvas().getChildren().add(newTextGroup);
         if (curDisplayable instanceof BiblePassage && QueleaProperties.get().getSmallBibleTextShow()) {
@@ -383,6 +380,8 @@ public class LyricDrawer extends WordDrawer {
         }
     }
 
+    static int iter = 0;
+
     /**
      * Set the theme of this getCanvas().
      * <p/>
@@ -394,78 +393,41 @@ public class LyricDrawer extends WordDrawer {
         if (theme == null) {
             theme = ThemeDTO.DEFAULT_THEME;
         }
-        boolean sameVid = false;
-        if (theme.getBackground() instanceof VideoBackground && VLCWindow.INSTANCE.getLastLocation() != null) {
-            String newLocation = ((VideoBackground) theme.getBackground()).getVLCVidString();
-            String[] locationParts = newLocation.split("[\\r\\n]+");
-            if (locationParts.length > 1) {
-                newLocation = locationParts[0];
-            }
-            String oldLocation = VLCWindow.INSTANCE.getLastLocation();
-            if (newLocation.equals(oldLocation)) {
-                sameVid = true;
-            }
-        }
         this.theme = theme;
-        Image image;
+        Image image = null;
         ColorAdjust colourAdjust = null;
+        final ImageView newImageView = getCanvas().getNewImageView();
         if (theme.getBackground() instanceof ImageBackground) {
             image = ((ImageBackground) theme.getBackground()).getImage();
         } else if (theme.getBackground() instanceof ColourBackground) {
             Color color = ((ColourBackground) theme.getBackground()).getColour();
             image = Utils.getImageFromColour(color);
-        } else if (theme.getBackground() instanceof VideoBackground && getCanvas().getPlayVideo()) {
-            image = null;
         } else if (theme.getBackground() instanceof VideoBackground) {
-            VideoBackground vidBack = (VideoBackground) theme.getBackground();
-            image = Utils.getVidBlankImage(vidBack.getVideoFile());
-            colourAdjust = new ColorAdjust();
-            double hue = vidBack.getHue() * 2;
-            if (hue > 1) {
-                hue -= 2;
+            var uri = ((VideoBackground) theme.getBackground()).getVideoFile().toURI();
+            if(!Objects.equals(vidDisplay.getUri(), uri)) {
+                vidDisplay.stop();
+                vidDisplay.setURI(uri);
+                vidDisplay.play();
             }
-            hue *= -1;
-            colourAdjust.setHue(hue);
+            newImageView.imageProperty().bind(vidDisplay.imageProperty());
+
         } else {
             LOGGER.log(Level.SEVERE, "Bug: Unhandled theme background case, trying to use default background: " + theme.getBackground(), new RuntimeException("DEBUG EXCEPTION FOR STACK TRACE"));
             image = Utils.getImageFromColour(ThemeDTO.DEFAULT_BACKGROUND.getColour());
         }
 
         Node newBackground;
-        if (image == null) {
-            final VideoBackground vidBackground = (VideoBackground) theme.getBackground();
-            if (!sameVid || !VLCWindow.INSTANCE.isPlaying()) {
-                final String location = vidBackground.getVLCVidString();
-                final boolean stretch = vidBackground.getStretch();
-                String[] locationParts = location.split("[\\r\\n]+");
-                VLCWindow.INSTANCE.refreshPosition();
-                VLCWindow.INSTANCE.show();
-                VLCWindow.INSTANCE.setRepeat(true);
-                if (locationParts.length == 1) {
-                    VLCWindow.INSTANCE.play(locationParts[0], null, stretch);
-                } else {
-                    VLCWindow.INSTANCE.play(locationParts[0], locationParts[1], stretch);
-                }
-                VLCWindow.INSTANCE.setHue(vidBackground.getHue());
-            }
-            if (sameVid && VLCWindow.INSTANCE.getHue() != ((VideoBackground) theme.getBackground()).getHue()) {
-                VLCWindow.INSTANCE.fadeHue(vidBackground.getHue());
-            }
-            newBackground = null; //transparent
-        } else {
-            if (getCanvas().getPlayVideo() && !(theme.getBackground() instanceof VideoBackground)) {
-                VLCWindow.INSTANCE.stop();
-            }
-            final ImageView newImageView = getCanvas().getNewImageView();
-            newImageView.setFitHeight(getCanvas().getHeight());
-            newImageView.setFitWidth(getCanvas().getWidth());
+        newImageView.setFitHeight(getCanvas().getHeight());
+        newImageView.setFitWidth(getCanvas().getWidth());
+        if (image != null) {
             newImageView.setImage(image);
-            if (colourAdjust != null) {
-                newImageView.setEffect(colourAdjust);
-            }
-            getCanvas().getChildren().add(newImageView);
-            newBackground = newImageView;
         }
+
+//        if (colourAdjust != null) {
+//            newImageView.setEffect(colourAdjust);
+//        }
+        getCanvas().getChildren().add(newImageView);
+        newBackground = newImageView;
         getCanvas().getChildren().remove(getCanvas().getCanvasBackground());
         getCanvas().setOpacity(1);
         getCanvas().setCanvasBackground(newBackground);
@@ -654,7 +616,16 @@ public class LyricDrawer extends WordDrawer {
                 translationArr = translationText.split("\n");
             }
         }
-        setText(bigText, translationArr, displayable.getSections()[index].getSmallText(), fade, uniformFontSize);
+
+        String[] smallText = displayable.getSections()[index].getSmallText();
+        if (QueleaProperties.get().getSmallSongTextShowOnSlides().equals("first") && index > 0) {
+            smallText = new String[0];
+        }
+        if (QueleaProperties.get().getSmallSongTextShowOnSlides().equals("last") && index < displayable.getSections().length - 1) {
+            smallText = new String[0];
+        }
+
+        setText(bigText, translationArr, smallText, fade, uniformFontSize);
     }
 
     /**

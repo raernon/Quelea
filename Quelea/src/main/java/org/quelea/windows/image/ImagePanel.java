@@ -17,7 +17,7 @@
  */
 package org.quelea.windows.image;
 
-import javafx.event.EventHandler;
+
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import org.quelea.data.displayable.ImageDisplayable;
@@ -44,7 +44,7 @@ public class ImagePanel extends AbstractPanel {
      */
     public ImagePanel() {
         setStyle("-fx-background-color: rgba(0, 0, 0);");
-        previewCanvas = new DisplayCanvas(false, false, false, super::updateCanvas, Priority.LOW);
+        previewCanvas = new DisplayCanvas(false, super::updateCanvas, Priority.LOW);
         registerDisplayCanvas(previewCanvas);
         setCenter(previewCanvas);
         addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent t) -> {

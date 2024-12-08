@@ -18,16 +18,12 @@
 package org.quelea.windows.main;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import org.quelea.data.displayable.AudioDisplayable;
@@ -45,6 +41,7 @@ import org.quelea.data.displayable.WebDisplayable;
 import org.quelea.services.utils.LoggerUtils;
 import org.quelea.services.utils.QueleaProperties;
 import org.quelea.services.utils.Utils;
+import org.quelea.utils.SongDisplayableList;
 import org.quelea.windows.image.ImagePanel;
 import org.quelea.windows.imagegroup.ImageGroupPanel;
 import org.quelea.windows.lyrics.SelectLyricsPanel;
@@ -124,10 +121,10 @@ public abstract class LivePreviewPanel extends BorderPane {
             }
         });
         setOnDragDropped(event -> {
-            if (event.getDragboard().getContent(SongDisplayable.SONG_DISPLAYABLE_FORMAT) instanceof SongDisplayable) {
-                final SongDisplayable displayable = (SongDisplayable) event.getDragboard().getContent(SongDisplayable.SONG_DISPLAYABLE_FORMAT);
-                if (displayable != null) {
-                    setDisplayable(displayable, 0);
+            if (event.getDragboard().getContent(SongDisplayable.SONG_DISPLAYABLE_FORMAT) instanceof SongDisplayableList) {
+                final List<SongDisplayable> displayables = ((SongDisplayableList) event.getDragboard().getContent(SongDisplayable.SONG_DISPLAYABLE_FORMAT)).getSongDisplayables();
+                if (!displayables.isEmpty()) {
+                    setDisplayable(displayables.get(0), 0);
                 }
             }
             event.consume();
@@ -289,7 +286,7 @@ public abstract class LivePreviewPanel extends BorderPane {
      * @return the currently selected displayable index.
      */
 
-    public int getLenght() {
+    public int getLength() {
         if (PRESENTATION_LABEL.equals(currentLabel)) {
             return presentationPanel.getSlideCount();
         } else if (PDF_LABEL.equals(currentLabel)) {

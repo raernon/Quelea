@@ -31,11 +31,7 @@ import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -66,7 +62,6 @@ import org.quelea.services.utils.LoggerUtils;
 import org.quelea.services.utils.QueleaProperties;
 import org.quelea.services.utils.Utils;
 import org.quelea.windows.main.actionhandlers.AddBibleVerseHandler;
-import org.quelea.windows.multimedia.VLCWindow;
 import org.quelea.windows.presentation.PowerPointHandler;
 
 /**
@@ -159,7 +154,9 @@ public class LivePanel extends LivePreviewPanel {
         }
         logoIV.setFitHeight(16);
         logoIV.setFitWidth(16);
+        ToggleGroup group = new ToggleGroup();
         logo = new ToggleButton("", logoIV);
+        logo.setToggleGroup(group);
         Utils.setToolbarButtonStyle(logo);
         logo.setTooltip(new Tooltip(LabelGrabber.INSTANCE.getLabel("logo.screen.tooltip") + " (F5)"));
         logo.setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
@@ -170,7 +167,7 @@ public class LivePanel extends LivePreviewPanel {
                     if (QueleaProperties.get().getLastDirectory() != null) {
                         chooser.setInitialDirectory(QueleaProperties.get().getLastDirectory());
                     }
-                    chooser.getExtensionFilters().add(FileFilters.IMAGES);
+                    chooser.getExtensionFilters().add(FileFilters.IMAGE_VIDEOS);
                     chooser.setInitialDirectory(QueleaProperties.get().getImageDir().getAbsoluteFile());
                     File file = chooser.showOpenDialog(QueleaApp.get().getMainWindow());
                     if (file != null) {
@@ -194,27 +191,31 @@ public class LivePanel extends LivePreviewPanel {
         });
         header.getItems().add(logo);
         black = new ToggleButton("", new ImageView(new Image("file:icons/black.png")));
+        black.setToggleGroup(group);
         Utils.setToolbarButtonStyle(black);
         black.setTooltip(new Tooltip(LabelGrabber.INSTANCE.getLabel("black.screen.tooltip") + " (F6)"));
-        black.setOnAction(new EventHandler<javafx.event.ActionEvent>() {
-            @Override
-            public void handle(javafx.event.ActionEvent t) {
-                if (getDisplayable() instanceof PresentationDisplayable && QueleaProperties.get().getUsePP()) {
-                    PowerPointHandler.screenBlack();
-                }
-                HashSet<DisplayCanvas> canvases = new HashSet<>();
-                canvases.addAll(getCanvases());
-                for (DisplayCanvas canvas : canvases) {
+        black.setOnAction(t -> {
+            if (getDisplayable() instanceof PresentationDisplayable && QueleaProperties.get().getUsePP()) {
+                PowerPointHandler.screenBlack();
+            }
+            HashSet<DisplayCanvas> canvases = new HashSet<>();
+            canvases.addAll(getCanvases());
+            for (DisplayCanvas canvas : canvases) {
+                if(!canvas.isStageView() || QueleaProperties.get().getBlackStageWithMain()) {
                     canvas.setBlacked(black.isSelected());
                 }
-                QueleaApp.get().getMainWindow().getMainPanel().getLivePanel().getLyricsPanel().requestFocus();
+                else {
+                    canvas.setBlacked(false);
+                }
             }
+            QueleaApp.get().getMainWindow().getMainPanel().getLivePanel().getLyricsPanel().requestFocus();
         });
         header.getItems().add(black);
         ImageView clearIV = new ImageView(new Image("file:icons/clear.png"));
         clearIV.setFitWidth(16);
         clearIV.setFitHeight(16);
         clear = new ToggleButton("", clearIV);
+        clear.setToggleGroup(group);
         Utils.setToolbarButtonStyle(clear);
         clear.setTooltip(new Tooltip(LabelGrabber.INSTANCE.getLabel("clear.text.tooltip") + " (F7)"));
         clear.setOnAction((javafx.event.ActionEvent t) -> {
@@ -235,47 +236,43 @@ public class LivePanel extends LivePreviewPanel {
         hideIV.setFitHeight(16);
         hide = new ToggleButton("", hideIV);
         Utils.setToolbarButtonStyle(hide);
+        hide.setToggleGroup(group);
         hide.setTooltip(new Tooltip(LabelGrabber.INSTANCE.getLabel("hide.display.output.tooltip") + " (F8)"));
-        hide.setOnAction(new EventHandler<javafx.event.ActionEvent>() {
-            @Override
-            public void handle(javafx.event.ActionEvent t) {
-                int projectorScreen = QueleaProperties.get().getProjectorScreen();
-                int stageScreen = QueleaProperties.get().getStageScreen();
-                final ObservableList<Screen> monitors = Screen.getScreens();
+        hide.setOnAction(t -> {
+            int projectorScreen = QueleaProperties.get().getProjectorScreen();
+            int stageScreen = QueleaProperties.get().getStageScreen();
+            final ObservableList<Screen> monitors = Screen.getScreens();
 
-                DisplayStage appWindow = QueleaApp.get().getProjectionWindow();
-                DisplayStage stageWindow = QueleaApp.get().getStageWindow();
+            DisplayStage appWindow = QueleaApp.get().getProjectionWindow();
+            DisplayStage stageWindow = QueleaApp.get().getStageWindow();
 
-                final boolean lyricsHidden;
-                if (!QueleaProperties.get().isProjectorModeCoords() && (projectorScreen >= monitors.size() || projectorScreen < 0)) {
-                    lyricsHidden = true;
+            final boolean lyricsHidden;
+            if (!QueleaProperties.get().isProjectorModeCoords() && (projectorScreen >= monitors.size() || projectorScreen < 0)) {
+                lyricsHidden = true;
+            } else {
+                lyricsHidden = false;
+            }
+
+            final boolean stageHidden;
+            if (!QueleaProperties.get().isStageModeCoords() && (stageScreen >= monitors.size() || stageScreen < 0)) {
+                stageHidden = true;
+            } else {
+                stageHidden = false;
+            }
+
+            if (!lyricsHidden) {
+                if (hide.isSelected()) {
+                    appWindow.hide();
                 } else {
-                    lyricsHidden = false;
+                    appWindow.show();
                 }
-
-                final boolean stageHidden;
-                if (!QueleaProperties.get().isStageModeCoords() && (stageScreen >= monitors.size() || stageScreen < 0)) {
-                    stageHidden = true;
+            }
+            if (!stageHidden) {
+                if (hide.isSelected()) {
+                    stageWindow.hide();
                 } else {
-                    stageHidden = false;
+                    stageWindow.show();
                 }
-
-                if (!lyricsHidden) {
-                    if (hide.isSelected()) {
-                        appWindow.hide();
-                    } else {
-                        appWindow.show();
-                    }
-                }
-                if (!stageHidden) {
-                    if (hide.isSelected()) {
-                        stageWindow.hide();
-                    } else {
-                        stageWindow.show();
-                    }
-                }
-                VLCWindow.INSTANCE.refreshPosition();
-//                VLCWindow.INSTANCE.setHideButton(hide.isSelected());
             }
         });
         //header.getItems().add(hide);
@@ -422,17 +419,14 @@ public class LivePanel extends LivePreviewPanel {
      * @param show display the extra options.
      */
     public void showExtraToolbarOptions(boolean show) {
-        if (show) {
-            if (!header.getItems().contains(hide)) {
+        if (show){
+            if (!header.getItems().contains(hide)){
                 header.getItems().add(hide);
             }
-        } else {
-            if (header.getItems().contains(hide)) {
-                header.getItems().remove(hide);
-            }
+        }else{
+               header.getItems().remove(hide);     
         }
     }
-
     /**
      * Set the displayable to be shown on this live panel.
      * <p/>
@@ -473,20 +467,12 @@ public class LivePanel extends LivePreviewPanel {
         }
         if (d instanceof WebDisplayable) {
             updateWebPreview = Executors.newSingleThreadScheduledExecutor();
-            updateWebPreview.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (d != null && d instanceof WebDisplayable) {
-                                getWebPanel().setLoading();
-                                getWebPanel().getImagePreview().setImage(geWebPreviewImage());
-                            }
-                        }
-                    });
+            updateWebPreview.scheduleAtFixedRate(() -> Platform.runLater(() -> {
+                if (d != null && d instanceof WebDisplayable) {
+                    getWebPanel().setLoading();
+                    getWebPanel().getImagePreview().setImage(geWebPreviewImage());
                 }
-            }, 0, QueleaProperties.get().getWebDisplayableRefreshRate(), TimeUnit.MILLISECONDS);
+            }), 0, QueleaProperties.get().getWebDisplayableRefreshRate(), TimeUnit.MILLISECONDS);
         }
         if (oldD instanceof WebDisplayable) {
             ((WebDisplayable) oldD).dispose();
@@ -615,6 +601,14 @@ public class LivePanel extends LivePreviewPanel {
 
     public void setBlacked(boolean isBlack) {
         this.black.setSelected(isBlack);
+    }
+
+    public void clickBlacked() {
+        this.black.fire();
+    }
+
+    public void clickLogoed() {
+        this.logo.fire();
     }
 
     public void stopLoop() {

@@ -248,6 +248,7 @@ public class PreferenceStorageHandler implements StorageHandler {
             case QueleaPropertyKeys.smallBibleTextVPositionKey:
             case QueleaPropertyKeys.smallSongTextHPositionKey:
             case QueleaPropertyKeys.smallSongTextVPositionKey:
+            case QueleaPropertyKeys.smallSongTextShowOnSlidesKey:
             case QueleaPropertyKeys.stageTextAlignmentKey:
                 String pos = LabelGrabber.INSTANCE.getEngKey(object.toString());
                 if (pos != null) {
@@ -328,7 +329,6 @@ public class PreferenceStorageHandler implements StorageHandler {
                 case QueleaPropertyKeys.darkThemeKey:
                     return LabelGrabber.INSTANCE.getLabel(QueleaProperties.get().getUseDarkTheme() ? "dark.theme.label" : "default.theme.label");
                 case QueleaPropertyKeys.projectorModeKey:
-                    return property.equals("coords");
                 case QueleaPropertyKeys.stageModeKey:
                     return property.equals("coords");
                 case QueleaPropertyKeys.projectorHCoordKey:
@@ -381,7 +381,7 @@ public class PreferenceStorageHandler implements StorageHandler {
                 default:
                     try {
                         Object object = gson.fromJson(property, Object.class);
-                        if (breadcrumb.contains("position") || breadcrumb.contains("alignment")) {
+                        if (breadcrumb.contains("position") || breadcrumb.contains("alignment") || breadcrumb.contains("show.on.slides")) {
                             return LabelGrabber.INSTANCE.getLabel(object.toString().toLowerCase());
                         } else {
                             return object;

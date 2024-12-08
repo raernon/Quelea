@@ -41,6 +41,7 @@ import java.util.HashMap;
 
 import static org.quelea.services.utils.QueleaPropertyKeys.*;
 import static org.quelea.windows.options.PreferencesDialog.getPositionSelector;
+import static org.quelea.windows.options.PreferencesDialog.getShowOnSlidesSelector;
 
 /**
  * A panel where the general options in the program are set.
@@ -130,9 +131,10 @@ public class OptionsGeneralPanel {
                                         Setting.of(LabelGrabber.INSTANCE.getLabel("show.extra.live.panel.toolbar.options.label"), new SimpleBooleanProperty(QueleaProperties.get().getShowExtraLivePanelToolbarOptions())).customKey(showExtraLivePanelToolbarOptionsKey),
                                         Setting.of(LabelGrabber.INSTANCE.getLabel("thumbnail.size.label"), thumbnailSizeProperty, 100, 1000).customKey(thumbnailSizeKey),
                                         Setting.of(LabelGrabber.INSTANCE.getLabel("link.preview.and.live.dividers.label"), new SimpleBooleanProperty(QueleaProperties.get().getLinkPreviewAndLiveDividers())).customKey(linkPreviewAndLiveDividers)
-                                        ),
+                                ),
                                 Group.of(LabelGrabber.INSTANCE.getLabel("small.song.text.options"),
                                         Setting.of(LabelGrabber.INSTANCE.getLabel("show.small.song.text.label"), showSmallSongProperty).customKey(showSmallSongTextKey),
+                                        getShowOnSlidesSelector(LabelGrabber.INSTANCE.getLabel("show.small.song.on.slides.label"), QueleaProperties.get().getSmallSongTextShowOnSlides(), showSmallSongProperty, bindings).customKey(smallSongTextShowOnSlidesKey),
                                         getPositionSelector(LabelGrabber.INSTANCE.getLabel("small.song.position.label"), false, QueleaProperties.get().getSmallSongTextPositionV(), showSmallSongProperty, bindings).customKey(smallSongTextVPositionKey),
                                         getPositionSelector(LabelGrabber.INSTANCE.getLabel("small.song.position.label"), true, QueleaProperties.get().getSmallSongTextPositionH(), showSmallSongProperty, bindings).customKey(smallSongTextHPositionKey),
                                         Setting.of(LabelGrabber.INSTANCE.getLabel("small.song.size.label"), smallSongSizeControllerField, smallSongSizeSpinnerProperty).customKey(smallSongTextSizeKey)

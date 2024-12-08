@@ -1,6 +1,6 @@
 /*
  * This file is part of Quelea, free projection software for churches.
- * 
+ *
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,10 +16,8 @@
  */
 package org.quelea.windows.main;
 
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -31,11 +29,12 @@ import javafx.stage.StageStyle;
 import org.quelea.services.languages.LabelGrabber;
 import org.quelea.services.utils.LoggerUtils;
 import org.quelea.services.utils.Utils;
+import org.quelea.utils.PlatformUtils;
 import org.quelea.windows.main.DisplayCanvas.Priority;
 import org.quelea.windows.main.widgets.Clock;
 import org.quelea.windows.main.widgets.TestImage;
-import org.quelea.windows.multimedia.VLCWindow;
-import org.quelea.utils.PlatformUtils;
+
+import java.util.logging.Logger;
 
 /**
  * The full screen window used for displaying the projection.
@@ -64,28 +63,23 @@ public class DisplayStage extends Stage {
      * a normal projection view.
      */
     public DisplayStage(Bounds area, boolean stageView) {
-        final boolean playVideo = !stageView;
         initStyle(StageStyle.TRANSPARENT);
         Utils.addIconsToStage(this);
         setTitle(LabelGrabber.INSTANCE.getLabel("projection.window.title"));
         setAreaImmediate(area);
         StackPane scenePane = new StackPane();
         scenePane.setStyle("-fx-background-color: transparent;");
-        canvas = new DisplayCanvas(true, stageView, playVideo, null, stageView ? Priority.HIGH : Priority.MID);
+        canvas = new DisplayCanvas(stageView, null, stageView ? Priority.HIGH : Priority.MID);
         canvas.setCursor(BLANK_CURSOR);
         scenePane.getChildren().add(canvas);
         if (stageView) {
             final Clock clock = new Clock();
-            ChangeListener<Number> cl = new ChangeListener<Number>() {
-
-                @Override
-                public void changed(ObservableValue<? extends Number> ov, Number t, Number t1) {
-                    double size = getWidth();
-                    if (getHeight() < size) {
-                        size = getHeight();
-                    }
-                    clock.setFontSize(size / 24);
+            ChangeListener<Number> cl = (ov, t, t1) -> {
+                double size = getWidth();
+                if (getHeight() < size) {
+                    size = getHeight();
                 }
+                clock.setFontSize(size / 24);
             };
             widthProperty().addListener(cl);
             heightProperty().addListener(cl);
@@ -105,36 +99,6 @@ public class DisplayStage extends Stage {
             scene.setFill(null);
         }
         setScene(scene);
-        if (playVideo) {
-            addVLCListeners();
-        }
-    }
-
-    private void addVLCListeners() {
-        widthProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                VLCWindow.INSTANCE.refreshPosition();
-            }
-        });
-        heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                VLCWindow.INSTANCE.refreshPosition();
-            }
-        });
-        xProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                VLCWindow.INSTANCE.refreshPosition();
-            }
-        });
-        yProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                VLCWindow.INSTANCE.refreshPosition();
-            }
-        });
     }
 
     /**
@@ -149,28 +113,23 @@ public class DisplayStage extends Stage {
         testImage.setVisible(img != null);
         testImage.setImage(img);
     }
-    
+
     /**
      * Set the Stage to be fullscreen or to make it non-fullscreen.
      * <p/>
-     * @param area the area of the window.
+     * @param fullscreen the area of the window.
      */
     public final void setFullScreenAlwaysOnTopImmediate(boolean fullscreen) {
         PlatformUtils.setFullScreenAlwaysOnTop(this, fullscreen);
     }
-    
+
     /**
      * Set the Stage to be fullscreen or to make it non-fullscreen using run later.
      * <p/>
-     * @param area the area of the window.
+     * @param fullscreen the area of the window.
      */
     public final void setFullScreenAlwaysOnTop(boolean fullscreen) {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                setFullScreenAlwaysOnTopImmediate(fullscreen);  
-            }
-        });
+        Platform.runLater(() -> setFullScreenAlwaysOnTopImmediate(fullscreen));
     }
 
     /**
@@ -184,20 +143,17 @@ public class DisplayStage extends Stage {
         setX(area.getMinX());
         setY(area.getMinY());
     }
-    
+
     /**
      * Set the area of the display window using run later.
      * <p/>
      * @param area the area of the window.
      */
     public final void setArea(final Bounds area) {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                // ensure the window is not fullscreen always on top here
-                setFullScreenAlwaysOnTopImmediate(false);
-                setAreaImmediate(area);
-            }
+        Platform.runLater(() -> {
+            // ensure the window is not fullscreen always on top here
+            setFullScreenAlwaysOnTopImmediate(false);
+            setAreaImmediate(area);
         });
     }
 

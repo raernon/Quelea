@@ -27,6 +27,8 @@ import org.quelea.windows.library.LibraryPanel;
 import org.quelea.windows.main.QueleaApp;
 import org.quelea.windows.main.schedule.SchedulePanel;
 
+import java.util.List;
+
 /**
  * The action listener for adding a song, called when something fires off an
  * action that adds a song from the library to the schedule.
@@ -50,34 +52,23 @@ public class AddSongActionHandler implements EventHandler<ActionEvent> {
     public void handle(ActionEvent t) {
         LibraryPanel libraryPanel = QueleaApp.get().getMainWindow().getMainPanel().getLibraryPanel();
         SchedulePanel schedulePanel = QueleaApp.get().getMainWindow().getMainPanel().getSchedulePanel();
-        SongDisplayable song = libraryPanel.getLibrarySongPanel().getSongList().getSelectedValue();
-        if(QueleaProperties.get().getSongOverflow() || !updateInDB) {
-            song = new SongDisplayable(song);
-        }
-        if(!updateInDB) {
-            song.setID(-1);
-            song.setNoDBUpdate();
-        }
-        if(QueleaProperties.get().getUseDefaultTranslation()) {
-            String defaultTranslation = QueleaProperties.get().getDefaultTranslationName();
-            if(defaultTranslation!=null && !defaultTranslation.trim().isEmpty()) {
-                song.setCurrentTranslationLyrics(defaultTranslation);
+        List<SongDisplayable> songs = libraryPanel.getLibrarySongPanel().getSongList().getSelectedValues();
+        for(SongDisplayable song : songs) {
+            if (QueleaProperties.get().getSongOverflow() || !updateInDB) {
+                song = new SongDisplayable(song);
             }
-        }
-        cacheVidPreview(song);
-        schedulePanel.getScheduleList().add(song);
-        libraryPanel.getLibrarySongPanel().getSearchBox().clear();
-    }
-
-    private void cacheVidPreview(SongDisplayable song) {
-        if(song != null && song.getSections()!=null && song.getSections().length > 0 && song.getSections()[0] != null && song.getSections()[0].getTheme() != null && song.getSections()[0].getTheme().getBackground() instanceof VideoBackground) {
-            final VideoBackground background = (VideoBackground) song.getSections()[0].getTheme().getBackground();
-            new Thread() {
-                @Override
-                public void run() {
-                    Utils.getVidBlankImage(background.getVideoFile()); //cache it
+            if (!updateInDB) {
+                song.setID(-1);
+                song.setNoDBUpdate();
+            }
+            if (QueleaProperties.get().getUseDefaultTranslation()) {
+                String defaultTranslation = QueleaProperties.get().getDefaultTranslationName();
+                if (defaultTranslation != null && !defaultTranslation.trim().isEmpty()) {
+                    song.setCurrentTranslationLyrics(defaultTranslation);
                 }
-            }.start();
+            }
+            schedulePanel.getScheduleList().add(song);
+            libraryPanel.getLibrarySongPanel().getSearchBox().clear();
         }
     }
 }

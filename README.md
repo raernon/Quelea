@@ -1,19 +1,14 @@
-![Github All Releases](https://img.shields.io/github/downloads/quelea-projection/Quelea/total.svg)
- [![Build Status](https://travis-ci.com/quelea-projection/Quelea.svg?branch=master)](https://travis-ci.com/quelea-projection/Quelea) 
-[![quelea](https://snapcraft.io/quelea/badge.svg)](https://snapcraft.io/quelea)
-[![quelea](https://snapcraft.io/quelea/trending.svg?name=0)](https://snapcraft.io/quelea) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
- 
 # Quelea
 
 **Are you here to download the latest version? Great! You want one of these:**
 
-[**2021.0 - Windows x64**](https://github.com/quelea-projection/Quelea/releases/download/v2021.0/quelea-2021.0-x64-windows-install.exe)
+[**2024.0 - Windows x64**](https://github.com/quelea-projection/Quelea/releases/download/v2024.0/quelea-2024.0-x64-windows-install.exe)
 
-[**2021.0 - Cross platform (requires Java)**](https://github.com/quelea-projection/Quelea/releases/download/v2021.0/quelea-2021.0-crossplatform-install.jar)
+[**2024.0 - Cross platform (requires Java)**](https://github.com/quelea-projection/Quelea/releases/download/v2024.0/quelea-2024.0-crossplatform-install.jar)
 
-[**2021.0 - Mac**](https://github.com/quelea-projection/Quelea/releases/download/v2021.0/quelea-2021.0-mac.zip)
+[**2024.0 - Mac**](https://github.com/quelea-projection/Quelea/releases/download/v2024.0/quelea-2024.0-mac.zip)
 
-[**2021.0 - Linux**](https://snapcraft.io/quelea)<br>
+[**2024.0 - Linux**](https://snapcraft.io/quelea)<br>
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/quelea)
 
 **Problems or suggestions? [Head over to our forum and feel free to ask away](https://quelea.discourse.group/). We don't bite!**
